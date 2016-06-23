@@ -1,0 +1,102 @@
+#!/usr/bin/perl
+# -*-Perl-*-
+
+#---
+# $Id: po2dict 5757 2007-11-10 13:41:02Z djihed $
+#
+# ------------
+# Description:
+# ------------
+#  This script will read a "techdict.po" file and generate
+#  a dict compliant English/Arabic dictionary & index files to be used
+#  via dictd.
+#
+#  You will need to restart dictd after adding the above 2 files
+#  (namely the dictionary and index file) to your dictionary directory
+#  so you can have access to them and see them.
+#
+#  This script is meant to run in the same directory as your .po file.
+#
+# -----------------
+# Revision Details:    (Updated by Revision Control System)
+# -----------------
+#  $Date: 2007-11-10 14:41:02 +0100 (س, 10 نوف 2007) $
+#  $Author: djihed $
+#  $Revision: 5757 $
+#  $Source$
+#
+# (www.arabeyes.org - under GPL license)
+#---
+
+require "newgetopt.pl";
+
+##
+# Specify global variable values and init some Variables
+$this_script	= $0;
+$this_script    =~ s|^.*/([^/]*)|$1|;
+
+if ($opt_dir)
+{
+    if ($opt_dir !~ /\/$/)
+    {
+	$opt_dir = "$opt_dir/";
+    }
+}
+
+# Background info gathering
+chop($date  = `date`);
+chop($year  = `date +%Y`);
+chop($month = `date +%m`);
+
+# Some constants
+$webfiles	= "www.arabeyes.org";
+$dictname	= "Arabeyes Technical Computing Dictionary";
+$out_file	= "dictd.input";
+$dictfmt	= "dictfmt -j -u \"$webfiles\" -s \"$dictname\" techdict --utf8";
+$dictd_log	= "log";
+
+$dest = $opt_dir . "techdict.po";
+open (IN, "< $dest") or
+	die "<<!>> ERROR($this_script): Can't open file $dest for reading: $!";
+while (<IN>)
+{
+	if (/^msgid\s+"(.*)"/)  { push(@out, ":$1: "); $num_terms++; }
+
+	if (/^msgstr\s+"(.*)"/) { push(@out, "$1\n");  }
+}
+close(IN);
+
+open (OUT, "> $out_file") or
+    die "<<!>> ERROR($this_script): Can't open file $out_file for writing: $!";
+
+# Include whatever info should be noted in the 'info' header
+print OUT qq
+|=== =============================================================== ===
+This dictionary file is under FreeBSD Documentation License.
+For more info, please inspect thoroughly the following link,
+
+	http://wiki.arabeyes.org/FreeBSD_Documentation_License
+
+If you would like to help, please visit,
+
+  http://wiki.arabeyes.org/Technical_Dictionary
+  http://www.arabeyes.org/project.php?proj=QaMoose
+
+NOTE: This file contains $num_terms terms.
+|;
+
+# Dump out the actual lines collected from before
+foreach $line (@out) { print OUT $line; }
+
+close(OUT);
+
+# Generate dictd compliant dictionary & index file
+(!system("$dictfmt < $out_file")) or
+    die "<<!>> ERROR($this_script): Failed to run dictfmt: $!";
+
+# Accumulate all log info (and restarts) in a single file
+# - in association with /etc/init.d/dictd of course
+$logfile_existed = (-e $dictd_log);
+
+exit(0);
+

@@ -1,0 +1,50 @@
+#!/bin/bash
+# Copyright 2016, Abderrahim Kitouni <a.kitouni@gmail.com>
+# License: GPL
+
+set -e
+
+TEMPDIR=$HOME/techdict
+PUBDIR=$HOME/public_html/techdict
+ARCHIVE=$PUBDIR/archive
+
+TODAY=`date '+%Y%m%d'`
+BASEDIR=`dirname $0`
+
+rm -rf $TEMPDIR
+
+mkdir -p $ARCHIVE
+mkdir -p $TEMPDIR
+
+cd $TEMPDIR
+
+php /usr/share/mediawiki1.7/maintenance/dumpBackup.php --current > mwdump.xml
+
+$BASEDIR/wiki2po mwdump.xml > techdict.po
+
+$BASEDIR/wiki2csv mwdump.xml | sort -b -f -d > techdict.csv
+$BASEDIR/wiki2raw mwdump.xml | sort -b -f -d > techdict.raw
+
+$BASEDIR/po2dict
+zip techdict.dict.zip techdict.dict techdict.index
+
+$BASEDIR/raw2tex english techdict.raw > techdict.tex
+$BASEDIR/raw2tex arabic techdict.raw > arabdict.tex
+
+# to be removed when bidi no longer conflicts with multicol
+cp $BASEDIR/multicol-xetex-bidi.def .
+
+xelatex techdict.tex
+xelatex arabdict.tex
+
+cp -f $BASEDIR/COPYING $PUBDIR
+cp -f $BASEDIR/README.dicts $PUBDIR/README
+cp -f techdict.pdf arabdict.pdf techdict.dict.zip techdict.raw techdict.csv techdict.po $PUBDIR
+
+cp -f techdict.pdf $ARCHIVE/techdict-$TODAY.pdf
+cp -f arabdict.pdf $ARCHIVE/arabdict-$TODAY.pdf
+cp -f techdict.raw $ARCHIVE/techdict-$TODAY.raw
+cp -f techdict.csv $ARCHIVE/techdict-$TODAY.csv
+cp -f techdict.po $ARCHIVE/techdict-$TODAY.po
+cp -f techdict.dict.zip $ARCHIVE/techdict-$TODAY.dict
+

@@ -1,0 +1,55 @@
+#!/usr/bin/perl
+# Copyright Djihed Afifi, djihed@gmail.com
+# Convert techdict xml to csv like with ==== seperators
+# 2007
+# 
+# License: GPL
+#
+
+use strict;
+use warnings;
+use utf8;
+use XML::Simple; 
+use Data::Dumper; 
+
+my $VERSION = 0.1;
+
+# output utf8
+binmode STDOUT, ":utf8";
+
+
+my $XMLOBJ = new XML::Simple (KeyAttr=>['name'], ForceArray=>1, NoAttr=>1);
+my $XMLDATA = $XMLOBJ->XMLin(shift(@ARGV));
+
+#print Dumper($XMLDATA);
+
+foreach (@{$XMLDATA->{page}})
+{
+	my $word = $_->{title}[0];
+	my $text = $_->{revision}[0]->{text}[0];
+	if ($word =~ /techdict:/s)
+	{
+		$word =~ s/techdict://;
+		print $word, "====";
+		$text =~ /[\s.]*\{\{مصطلح\|[\s]*\|الاسم[\s]*=[\s]*([^\|]*)\|.*/s;
+		my $tr = "";
+		if ( defined $1)
+		{
+			$tr =  $1;
+		}
+
+		$tr =~ s/\s*$//g;
+		$tr =~ s/\s*،/،/g;
+		
+		if(!$tr) { $tr = "" ;}
+		print $tr, "\n";
+		# print out words with non valid characters
+		# usually these are used as delimiters, instead of
+		# template
+		#if($tr =~ /\\n|::|,|،/)
+		#{
+		#		print STDERR "[[techdict:$word]]\n";
+		#}
+	}
+}
+

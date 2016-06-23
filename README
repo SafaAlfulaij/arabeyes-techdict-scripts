@@ -1,0 +1,12 @@
+These scripts are used to extract Arabeyes' technical dictionary in various formats. As
+far as I can tell, the dependencies are XML::Simple and Locale::PO (on debian
+libxml-simple-perl and liblocale-po-perl) for the perl scripts, XeLaTeX with the etoolbox
+package (on debian, texlive-xetex and texlive-latex-extra) and dictfmt.
+
+The main script is buildtechdict, it calls the other scripts to generate all the files.
+By default it stores its working files in ~/techdict and copies the results to
+~/public_html/techdict, but these can be changed.
+
+Some (most) of these scripts were written by Djihed Afifi <djihed@gmail.com>.
+
+-- Abderrahim Kitouni <a.kitouni@gmail.com>

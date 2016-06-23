@@ -1,0 +1,33 @@
+\documentclass[12pt]{article}
+
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage[margin=2.5cm]{geometry}
+
+\usepackage{polyglossia}
+\setotherlanguages{arabic,english}
+\setmainfont{Amiri}
+\newfontfamily\arabicfont[Script=Arabic]{Amiri}
+
+\usepackage{etoolbox}
+\newlength{\myenwidth}
+\newlength{\myarwidth}
+\newcommand\dictentry[2]{{
+\settowidth{\myenwidth}{#1}
+\settowidth{\myarwidth}{#2}
+\ifdimgreater{\myenwidth+\myarwidth}{\linewidth-1em}%
+    {#1\\\mbox{}\hfill#2}%
+    {\mbox{#1}\hfill\mbox{#2}}
+}}
+
+
+\title{
+\textarabic{القاموس التقني المعلوماتي \\إنجليزي-عربي}\\
+\textenglish{English Arabic\\ Technical Computing Dictionary}
+}
+
+\author{
+\textarabic{فريق تعريب المشاريع الحرّة}\\
+\textenglish{Free Software Arabisation Team}\\
+\url{http://wiki.arabeyes.org/Technical\_Dictionary}
+}

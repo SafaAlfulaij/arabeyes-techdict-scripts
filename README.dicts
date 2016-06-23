@@ -1,0 +1,22 @@
+This is the Technical Computing Dictionary, it aims to translate and
+standardise technical terms that are used in software translation.
+It is an effort to unify the terms used across all projects and
+to present the user with consistant and understandable interfaces.
+
+The files are present in:
+http://www.arabeyes.org/~djihed/techdict
+
+
+These files are just for reference and offline viewing.
+All discussions and suggestions should be done at:
+http://wiki.arabeyes.org/Technical_Dictionary
+
+techdict.pdf	: The dictionary as a book.
+techdict.po 	: Po file, suitable as a reference or translation memory
+	for some applications (like poedit and KBabel).
+techdict.csv 	: parser friendly version, comma seperated.
+techdict.raw	: parser friendly version.
+
+
+---------------
+License:  see COPYING

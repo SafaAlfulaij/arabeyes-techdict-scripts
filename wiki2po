@@ -1,0 +1,78 @@
+#!/usr/bin/perl
+# Copyright Djihed Afifi, djihed@gmail.com
+# Convert techdict xml to one po file
+# Output is in stdout
+# stderr will contain strings which contain errors, preformed for 
+# the wiki
+# 2006
+# 
+# License: GPL
+#
+
+use strict;
+use warnings;
+use utf8;
+use XML::Simple; 
+use Locale::PO;
+
+
+my $VERSION = 0.1;
+
+# output utf8
+binmode STDOUT, ":utf8";
+
+
+my $XMLOBJ = new XML::Simple (KeyAttr=>['name'], ForceArray=>1, NoAttr=>1);
+my $XMLDATA = $XMLOBJ->XMLin(shift(@ARGV));
+
+my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime time;
+$mon += 1;
+$year += 1900;
+$mon = sprintf("%02d", $mon);
+
+
+my $po = new Locale::PO(-msgid=>'', -msgstr=>
+                   "Project-Id-Version: http://wiki.arabeyes.org/Technical_Dictionary\n" .
+                   "PO-Revision-Date: $year-$mon-$mday $hour:$min+0000\n" .
+                   "Last-Translator: Arabeyes Doc Team <doc\@arabeyes.org>\n" .
+                   "Language-Team: Arabic <doc\@arabeyes.org>\n" .
+                   "MIME-Version: 1.0\n" .
+                   "Content-Type: text/plain; charset=UTF-8\n" .
+                   "Content-Transfer-Encoding: 8bit\n");
+print $po->dump;
+foreach (@{$XMLDATA->{page}})
+{
+	my $word = $_->{title}[0];
+	my $text = $_->{revision}[0]->{text}[0];
+
+	
+	if ($word =~ /techdict:/s)
+	{
+		$word =~ s/techdict://;
+		#print $word, ", ";
+		$po->msgid($word);
+		
+		$text =~ /[\s.]*\{\{مصطلح\|[\s]*\|الاسم[\s]*=[\s]*([^\|]*)\|.*/s;
+		my $tr = "";
+		if ( defined $1)
+		{
+			$tr =  $1;
+		}
+
+		$tr =~ s/\s*$//g;
+		$tr =~ s/\s*،/،/g;
+
+		if(!$tr) { $tr = "" ;}
+		#print $tr, "\n";
+		$po->msgstr($tr);
+		print $po->dump;
+		# print out words with non valid characters
+		# usually these are used as delimiters, instead of
+		# template
+		#if($tr =~ /\\n|::|,|،/)
+		#{
+		#		print STDERR "[[techdict:$word]]\n";
+		#}
+	}
+}
+

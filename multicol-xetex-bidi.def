@@ -1,0 +1,2 @@
+% This is a dummy file so that xetex doesn't load the file of the same name
+% from the bidi package, which conflicts with recent versions of multicol.

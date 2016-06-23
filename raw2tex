@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# Copyright 2015, Abderrahim Kitouni <a.kitouni@gmail.com>
+# License: GPL
+
+from __future__ import print_function
+from six import PY2
+
+import os, sys
+from itertools import groupby
+from datetime import date
+
+if PY2:
+    import sys, codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
+if len(sys.argv) != 3:
+    print("USAGE: %s arabic|english techdict.raw" % sys.argv[0])
+    exit()
+
+main_arabic = sys.argv[1] == 'arabic'
+filename = sys.argv[2]
+
+e2a = []
+
+with open(filename) as infile:
+    if PY2:
+        infile = codecs.getreader('utf-8')(infile)
+
+    for row in infile:
+        english, arabic = row.strip().split('====')
+        if not arabic:
+            continue
+        if '_' in arabic:
+            continue
+
+        e2a.append((english, arabic))
+
+scriptdir = os.path.dirname(__file__)
+header1 = os.path.join(scriptdir, 'header1.tex')
+header2 = os.path.join(scriptdir, 'header2.tex')
+footer = os.path.join(scriptdir, 'footer.tex')
+
+if main_arabic:
+    def sortkey(t): return t[1]
+    def groupkey(t): return t[1][0]
+    def dictentry(english, arabic):
+        return r'\dictentry{%s}{\textenglish{%s}}' % (arabic, english)
+else:
+    def sortkey(t): return t[0].lower()
+    def groupkey(t): return t[0][0]
+    def dictentry(english, arabic):
+        return r'\dictentry{%s}{\textarabic{%s}}' % (english, arabic)
+
+with open(header1) as headfile:
+    if PY2:
+        headfile = codecs.getreader('utf-8')(headfile)
+    sys.stdout.writelines(headfile)
+
+today = date.today()
+print(r'\date{Version: 3.0.%d%0.2d%0.2d}' % (today.year, today.month, today.day))
+
+with open(header2) as headfile:
+    if PY2:
+        headfile = codecs.getreader('utf-8')(headfile)
+    sys.stdout.writelines(headfile)
+
+if main_arabic:
+    print(r'\begin{Arabic}')
+    print(r'\RLmulticolcolumns')
+else:
+    print(r'\begin{english}')
+
+print(r'\begin{multicols}{2}')
+print(r'\setlength{\parindent}{0pt}')
+
+e2a.sort(key=sortkey)
+for letter, group in groupby(e2a, groupkey):
+    print(r'\begin{center}')
+    print(r'{\LARGE %s}' % letter)
+    print(r'\end{center}')
+    # http://stackoverflow.com/questions/19339/a-transpose-unzip-function-in-python-inverse-of-zip
+    print("\\\\\n".join([dictentry(english, arabic) for english, arabic in group]))
+
+print(r'\end{multicols}')
+if main_arabic:
+    print(r'\end{Arabic}')
+else:
+    print(r'\end{english}')
+
+with open(footer) as footfile:
+    if PY2:
+        footfile = codecs.getreader('utf-8')(footfile)
+    sys.stdout.writelines(footfile)
